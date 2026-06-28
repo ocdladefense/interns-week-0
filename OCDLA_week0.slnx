@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="OCDLA_week0.esproj">
+    <Build />
+    <Deploy />
+  </Project>
+</Solution>
