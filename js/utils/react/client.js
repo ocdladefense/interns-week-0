@@ -1,6 +1,25 @@
 let root = null;
-let activeLocationId = null;
 let component = null;
+
+// ========= THE AMAZING STATE MACHINE =======================
+let state = {};
+let renderCount = 0;
+
+export function useState(initialValue, key) {
+    
+    if (renderCount == 0) {
+        state[key] = initialValue;
+    }
+
+    let currentValue = state[key];
+ 
+    function setState(newValue) {
+        state[key] = newValue;
+        fubar();
+    }
+
+    return [currentValue, setState];
+}
 
 export function createRoot(node) {
     root = node;
@@ -13,16 +32,8 @@ export function createRoot(node) {
     };
 }
 
-export function getActiveLocationId() {
-    return activeLocationId;
-}
-
-export function setActiveLocationId(activeLocationIdTmp) {
-    activeLocationId = activeLocationIdTmp;
-    fubar(); // Need to rerender here
-}
-
 function fubar() {
     root.replaceChildren();
     root.appendChild(component());
+    renderCount++;
 }

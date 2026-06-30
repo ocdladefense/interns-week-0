@@ -3,7 +3,7 @@ import { LocationInformation } from './LocationInformation.js';
 import { NoLocationSelected } from './NoLocationSelected.js';
 import { MyError } from './MyError.js';
 import { getLocation, getLocations } from '../data.js';
-import { getActiveLocationId, setActiveLocationId } from '../utils/react/client.js';
+import { useState } from '../utils/react/client.js';
 import { History } from '../models/History.js';
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -17,15 +17,15 @@ locationHistory.listenForLocationChanges(appEvents);  // Start the event listene
 
 export function App() {
     let locations = getLocations();
-    let activeLocationId = getActiveLocationId();
+    let [activeLocationId, setActiveLocationId] = useState(null, "activeLocationId");
 
     function onLocationClick(cityId) {
-        setActiveLocationId(cityId);                                           // Changes the state variable to the location from the last button clicked
-        const locationChangeEvent = new CustomEvent('locationChange', {        // CustomEvent to signal change of activeLocation and carry the city's name
-            detail: {                                                          // Add event promise details (event.detail)
-                id: cityId                                                 // Apply cityName variable to event.detail.name
+        setActiveLocationId(cityId);                                     // Changes the state variable to the location from the last button clicked
+        const locationChangeEvent = new CustomEvent('locationChange', {  // CustomEvent to signal change of activeLocation and carry the city ID
+            detail: {                                                    // Add event promise details (event.detail)
+                id: cityId                                               // Apply cityId variable to event.detail.id
             }
-            // ***The "event contract" becomes (Event type: 'locationChange', City name location: event.detail.name)***
+            // ***The "event contract" becomes (Event type: 'locationChange', City name location: event.detail.id)***
         });
 
         appEvents.dispatchEvent(locationChangeEvent);    // Dispatches locationChange event to appEvents() (*our EventTarget()*)
