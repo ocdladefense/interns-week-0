@@ -9,15 +9,21 @@ import { History } from '../models/History.js';
 // --------------------------------------------------------------------------------------------------------------------
 // TOP LEVEL RENDERING FUNCTION
 // --------------------------------------------------------------------------------------------------------------------
+const appEvents = new EventTarget();                  // Creates an EventTarget, a shared object to send/receive app level events
 
-const appEvents = new EventTarget();            // Creates an EventTarget, a shared object to send/receive app level events
 
 const locationHistory = new History();                // Creates a state object from the History class to track button click history
 locationHistory.listenForLocationChanges(appEvents);  // Start the event listener in locationHistory to listen for locationChange through appEvent
 
+
+// ---- Main App Export Function ----
+
 export function App() {
     let locations = getLocations();
-    let [activeLocationId, setActiveLocationId] = useState(null, "activeLocationId");
+    let [activeLocationId, setActiveLocationId] = useState(null);
+
+    // --------------------------------------------------------------------------------------
+    // ---- Nested click-handler function ----
 
     function onLocationClick(cityId) {
         setActiveLocationId(cityId);                                     // Changes the state variable to the location from the last button clicked
@@ -25,17 +31,19 @@ export function App() {
             detail: {                                                    // Add event promise details (event.detail)
                 id: cityId                                               // Apply cityId variable to event.detail.id
             }
-            // ***The "event contract" becomes (Event type: 'locationChange', City name location: event.detail.id)***
+            // -- The "event contract" becomes (Event type is 'locationChange', and city's ID is found at: event.detail.id) --
         });
+
 
         appEvents.dispatchEvent(locationChangeEvent);    // Dispatches locationChange event to appEvents() (*our EventTarget()*)
     }
+    // -----------------------------------------------------------------------------------------
 
-    let container = document.createElement('div');                                               // Creates a <div> parent node in memory
+    let container = document.createElement('div');               // Creates a <div> parent node in memory
     let main;
 
-    if (activeLocationId == null) {
-        main = NoLocationSelected();
+    if (activeLocationId == null) {            // If it's null...
+        main = NoLocationSelected();           // use the default page.
     }
 
     else if (activeLocationId != null) {
