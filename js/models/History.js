@@ -19,6 +19,7 @@ export class History {
 
     listenForLocationChanges(eventTarget) {                             // Listener for Synthetic Event 'locationChange' from eventTarget
         eventTarget.addEventListener('locationChange', (event) => {
+
             const cityId = event.detail.id;                         // Accesses the name dtail of the event and stores in a constant
 
             this.add(cityId);                                         // Pushes the constant's value (name detail from event) to the History object

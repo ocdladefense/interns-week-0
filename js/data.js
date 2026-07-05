@@ -21,25 +21,34 @@ const miami = new Location('Miami', 25.7617, -80.1918);
 // Creates an array of the declared Location objects
 let locations = [sanAntonio, austin, dallas, denver, portland, seattle, newOrleans, philadelphia, houston, miami];
 
+
+
 locations.forEach((location) => {
     let name = location.name;
     let id = StringUtils.convertToHTMLId(name);
     location.setId(id);
 });
 
+
+
 const locationsMap = new Map(locations.map((location) => {
 
     return[location.id, location];
 }));
 
-console.log(locationsMap.get('san-antonio'));
+
 
 function getLocation(id) {
     return locationsMap.get(id);
 }
 
+
+
 function getLocations() {
-    return locations;
+    // Refactored to deliver a promise
+    return Promise.resolve(locations); // Async delivery of the locations[] array
 }
 
-export {locations, getLocation, getLocations}; 
+
+
+export { getLocation, getLocations }; 

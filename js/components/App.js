@@ -3,14 +3,13 @@ import { LocationInformation } from './LocationInformation.js';
 import { NoLocationSelected } from './NoLocationSelected.js';
 import { MyError } from './MyError.js';
 import { getLocation, getLocations } from '../data.js';
-import { useState } from '../utils/react/client.js';
+import { useState, useEffect } from '../utils/react/client.js';
 import { History } from '../models/History.js';
 
 // --------------------------------------------------------------------------------------------------------------------
 // TOP LEVEL RENDERING FUNCTION
 // --------------------------------------------------------------------------------------------------------------------
 const appEvents = new EventTarget();                  // Creates an EventTarget, a shared object to send/receive app level events
-
 
 const locationHistory = new History();                // Creates a state object from the History class to track button click history
 locationHistory.listenForLocationChanges(appEvents);  // Start the event listener in locationHistory to listen for locationChange through appEvent
@@ -19,24 +18,38 @@ locationHistory.listenForLocationChanges(appEvents);  // Start the event listene
 // ---- Main App Export Function ----
 
 export function App() {
-    let locations = getLocations();
+
+    // -- React-like useState calls, return indexed values and setter functions --
+    let [locations, setLocations] = useState([]);
     let [activeLocationId, setActiveLocationId] = useState(null);
 
-    // --------------------------------------------------------------------------------------
+
+    // -- React-like useEffect --
+    useEffect(function () {
+        // getLocations returns a promise, and we store it in loadedLocations when it resolves
+        getLocations().then(function (loadedLocations) {
+            // then store the data in the useState slot for the locations array for tracking changes.
+            setLocations(loadedLocations);
+        });
+    }, []);
+
+
     // ---- Nested click-handler function ----
 
     function onLocationClick(cityId) {
+
         setActiveLocationId(cityId);                                     // Changes the state variable to the location from the last button clicked
         const locationChangeEvent = new CustomEvent('locationChange', {  // CustomEvent to signal change of activeLocation and carry the city ID
             detail: {                                                    // Add event promise details (event.detail)
                 id: cityId                                               // Apply cityId variable to event.detail.id
             }
-            // -- The "event contract" becomes (Event type is 'locationChange', and city's ID is found at: event.detail.id) --
         });
 
 
         appEvents.dispatchEvent(locationChangeEvent);    // Dispatches locationChange event to appEvents() (*our EventTarget()*)
     }
+
+
     // -----------------------------------------------------------------------------------------
 
     let container = document.createElement('div');               // Creates a <div> parent node in memory
