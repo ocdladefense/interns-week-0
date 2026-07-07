@@ -23,15 +23,17 @@ export function App() {
     let [locations, setLocations] = useState([]);
     let [activeLocationId, setActiveLocationId] = useState(null);
 
+    let [stateCode, setStateCode] = useState("OR"); // Mock up call, think about using a stateCode pulled from "somewhere" to be used for the app
+
 
     // -- React-like useEffect --
     useEffect(function () {
         // getLocations returns a promise, and we store it in loadedLocations when it resolves
-        getLocations().then(function (loadedLocations) {
+        getLocations(stateCode).then(function (loadedLocations) {
             // then store the data in the useState slot for the locations array for tracking changes.
             setLocations(loadedLocations);
         });
-    }, []);
+    }, [stateCode]);
 
 
     // ---- Nested click-handler function ----

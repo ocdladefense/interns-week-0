@@ -1,6 +1,7 @@
 let root = null;
 let component = null;
 let isProcessing = false;
+let renderCount = 1;
 
 // "The Microtask Queue" 
 let updateQueue = [];
@@ -27,7 +28,7 @@ export function useState(initialValue) {
 
     let currentValue = state[setterIndex];      // Snag that new value.
 
-    let setterFn = function(val) {             // Async setter, queue up the setter calls
+    let setterFn = function (val) {             // Async setter, queue up the setter calls
         sendEvent({ type: "stateUpdate", index: setterIndex, value: val });
     };
 
@@ -48,7 +49,7 @@ function sendEvent(eventPayload) {
 
         let thePromise = Promise.resolve();
 
-        thePromise.then(() => {processQueue();});
+        thePromise.then(() => { processQueue(); });
     }
 }
 
@@ -89,63 +90,87 @@ function processQueue() {
 let effects = [];
 let effectIndex = 0;
 
+let oldDeps = [];
+
 
 // ---- React-Like useEffect function ----
-export function useEffect(callback, dependencies) {
+export function useEffect(cb, deps) {
 
-    let currentEffect = effectIndex++;                           // Grab the currentEffect index and increment effectIndex
-
-    let previousEffect = effects[currentEffect];                 // Grab the value currently stored at the index
-
-    let oldDependencies;                                         // Initialize the oldDependencies
-
-    if (previousEffect !== undefined) {                          // If the current value stored in the index isn't empty,
-        oldDependencies = previousEffect.dependencies;           // apply it's current value to oldDependencies.
-    }
-
-    let shouldRun = depsChanged(oldDependencies, dependencies);  // Run the helper to compare dependencies (see below)
-
-    effects[currentEffect] = {         // Build the effect object and store at the current index
-        callback: callback,            // with the callback function,
-        dependencies: dependencies,    // new dependencies,
-        shouldRun: shouldRun           // and the boolean that decides whether or not it runs.
+    let effect = {
+        cb,
+        deps,
     };
-}
 
+    // Every effect should execute once after the first render.
+    if (renderCount == 1) {
+        effects.push(effect);
 
-// ---- DEPENDENCY COMPARISON: Did something change in the dependency array? ----
-function depsChanged(oldDeps, newDeps) {
-
-    if (newDeps === undefined || oldDeps === undefined) {     // If the old or new dependencies don't exist,
-        return true;                                          // act like it changed.
-    }
-
-    if (oldDeps.length !== newDeps.length) {                  // If the arrays aren't the same length,
-        return true;                                          // something changed.
-    }
-
-    // ASK JOSE: is this correct/safe?
-    for (let i = 0; i < newDeps.length; i++) {                // If the values at each index don't match,
-
-        if (oldDeps[i] !== newDeps[i]) {
-
-            return true;                                      // something changed.
+        if (Array.isArray(deps)) {
+            oldDeps[effectIndex] = deps.slice();
         }
+        else {
+            oldDeps[effectIndex] = null;
+        }
+
+        effectIndex++;
+        return;
     }
 
-    return false;                                             // Apparently, nothing changed.
+    // If deps doesn't exist, run effect every time.
+    if (deps == null) {
+        effects.push(effect);
+
+        oldDeps[effectIndex] = null;
+
+        effectIndex++;
+        return;
+    }
+
+    // If the newly passed dependencies don't match the old ones, execute the effect.
+    else if (Array.isArray(deps)) {   // Removed '&& deps.length > 0'...
+
+        let previousDeps = oldDeps[effectIndex];
+        let depsAreDifferent = false;
+
+        if (previousDeps.length != deps.length) { // ...and added this comparison of length. Should I do this differently?
+            depsAreDifferent = true;
+        }
+
+        else {
+            for (let i = 0; i < deps.length; i++) {
+
+                if (deps[i] != previousDeps[i]) {
+
+                    depsAreDifferent = true;
+                    break;
+                }
+            }
+        }
+
+        // Now that we've determined if they are different...
+        if (depsAreDifferent) {
+            effects.push(effect);
+        }
+
+        oldDeps[effectIndex] = deps.slice();
+
+        effectIndex++;
+
+        return;
+    }
 }
 
-// ---- RUN-EFFECTS: Iterate through effects[]. Check if the stored effects will run or not. ----
+
+
+
+// ---- RUN-EFFECTS: Iterate through effects[]
 function runEffects() {
-    effects.forEach(function(effect) {      // Iterate through stored effects.
-        if (effect && effect.shouldRun) {   // If they should run...
+    effects.forEach(function (effect) {      // Iterate through stored effects.
 
-            effect.shouldRun = false;       // Reset the shouldRun property
-
-            effect.callback();              // and run the callback function.
-        }
+        Promise.resolve().then(effect.cb);   // and queue the callback function.
     });
+
+    effects = [];
 }
 
 
@@ -169,7 +194,7 @@ export function createRoot(node) {
             effectIndex = 0;
 
             root.appendChild(c());
-            
+
             runEffects();
         }
     };
@@ -187,6 +212,7 @@ function fubar() {
 
     stateIndex = 0;                // Reset the state machine
     effectIndex = 0;
+    renderCount++;
 
     root.appendChild(component()); // Repaint the page
 
