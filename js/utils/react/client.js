@@ -101,73 +101,90 @@ export function useEffect(cb, deps) {
         deps,
     };
 
-    // Every effect should execute once after the first render.
-    if (renderCount == 1) {
-        effects.push(effect);
 
-        if (Array.isArray(deps)) {
-            oldDeps[effectIndex] = deps.slice();
-        }
-        else {
-            oldDeps[effectIndex] = null;
-        }
+    effects[effectIndex] = effect;
+    effectIndex++;
 
-        effectIndex++;
-        return;
-    }
 
-    // If deps doesn't exist, run effect every time.
-    if (deps == null) {
-        effects.push(effect);
+    //     // Every effect should execute once after the first render.
+    //     if (renderCount == 1) {
+    //         effects.push(effect);
 
-        oldDeps[effectIndex] = null;
+    //         if (Array.isArray(deps)) {
+    //             oldDeps[effectIndex] = deps.slice();
+    //         }
+    //         else {
+    //             oldDeps[effectIndex] = null;
+    //         }
 
-        effectIndex++;
-        return;
-    }
+    //         effectIndex++;
+    //         return;
+    //     }
 
-    // If the newly passed dependencies don't match the old ones, execute the effect.
-    else if (Array.isArray(deps)) {   // Removed '&& deps.length > 0'...
+    //     // If deps doesn't exist, run effect every time.
+    //     if (deps == null) {
+    //         effects.push(effect);
 
-        let previousDeps = oldDeps[effectIndex];
-        let depsAreDifferent = false;
+    //         oldDeps[effectIndex] = null;
 
-        if (previousDeps.length != deps.length) { // ...and added this comparison of length. Should I do this differently?
-            depsAreDifferent = true;
-        }
+    //         effectIndex++;
+    //         return;
+    //     }
 
-        else {
-            for (let i = 0; i < deps.length; i++) {
+    //     // If the newly passed dependencies don't match the old ones, execute the effect.
+    //     else if (Array.isArray(deps)) {   // Removed '&& deps.length > 0'...
 
-                if (deps[i] != previousDeps[i]) {
+    //         effectIndex++;
 
-                    depsAreDifferent = true;
-                    break;
-                }
-            }
-        }
-
-        // Now that we've determined if they are different...
-        if (depsAreDifferent) {
-            effects.push(effect);
-        }
-
-        oldDeps[effectIndex] = deps.slice();
-
-        effectIndex++;
-
-        return;
-    }
+    //         return;
+    //     }
 }
 
 
+function haveDepsChanged(current, previous) {
+    let depsAreDifferent = false;
 
+    for (let i = 0; i < current.length; i++) {
+
+        if (current[i] != previous[i]) {
+
+            return true;
+        }
+    }
+}
 
 // ---- RUN-EFFECTS: Iterate through effects[]
 function runEffects() {
-    effects.forEach(function (effect) {      // Iterate through stored effects.
+    effects.forEach(function (effect, index) {      // Iterate through stored effects.
+        let cb = effect.cb;
+        let deps = effect.deps;
+        let shouldExecute = false;
+        let previousDeps = oldDeps[index];
 
-        Promise.resolve().then(effect.cb);   // and queue the callback function.
+
+        if (renderCount == 1) {
+            shouldExecute = true;
+        }
+
+        else if (null == deps) {
+            shouldExecute = true;
+        }
+
+        else if (Array.isArray(deps) && deps.length == 0 && renderCount == 1) {
+            shouldExecute = true;
+        }
+
+        else if (haveDepsChanged(deps, previousDeps)) {
+            shouldExecute = true;
+        }
+
+
+        oldDeps[index] = deps;
+
+        if (shouldExecute) {
+            Promise.resolve().then(cb);   // and queue the callback function.
+        }
+
     });
 
     effects = [];
