@@ -5,6 +5,7 @@ import { MyError } from './MyError.js';
 import { getLocation, getLocations } from '../data.js';
 import { useState, useEffect } from '../utils/react/client.js';
 import { History } from '../models/History.js';
+import { StatePicker } from './StatePicker.js';
 
 // --------------------------------------------------------------------------------------------------------------------
 // TOP LEVEL RENDERING FUNCTION
@@ -23,7 +24,8 @@ export function App() {
     let [locations, setLocations] = useState([]);
     let [activeLocationId, setActiveLocationId] = useState(null);
 
-    let [stateCode, setStateCode] = useState("OR"); // Mock up call, think about using a stateCode pulled from "somewhere" to be used for the app
+    let [stateCode, setStateCode] = useState("OR");
+    let stateCodes = ['OR', 'TX', 'LA', 'CO', 'WA', 'PA', 'FL'];  // Change this to use available locations to filter out available stateCodes, probably in data.js
 
 
     // -- React-like useEffect --
@@ -32,11 +34,12 @@ export function App() {
         getLocations(stateCode).then(function (loadedLocations) {
             // then store the data in the useState slot for the locations array for tracking changes.
             setLocations(loadedLocations);
+            setActiveLocationId(null);     // Default screen if stateCode changes while activeLocation doesn't have the correct stateCode.
         });
     }, [stateCode]);
 
 
-    // ---- Nested click-handler function ----
+    // ---- Nested click-handler functions ----
 
     function onLocationClick(cityId) {
 
@@ -49,6 +52,11 @@ export function App() {
 
 
         appEvents.dispatchEvent(locationChangeEvent);    // Dispatches locationChange event to appEvents() (*our EventTarget()*)
+    }
+
+    function onStateClick(selectedStateCode) {
+        setStateCode(selectedStateCode);
+        setActiveLocationId(null);
     }
 
 
@@ -71,11 +79,13 @@ export function App() {
         }
     }
 
+    let stateButtons = StatePicker(stateCodes, stateCode, onStateClick);
 
-    let locationButtons = LocationPicker(locations, activeLocationId, onLocationClick);        // Stores the <div> child node                                  // Stores the <section> node
+    let locationButtons = LocationPicker(locations, activeLocationId, onLocationClick);
 
-    container.appendChild(locationButtons);   // Append the <div> child node inside the the <div> parent node
-    container.appendChild(main);              // Append the <section> child node to the <div> parent node
+    container.appendChild(stateButtons);
+    container.appendChild(locationButtons);
+    container.appendChild(main);
 
-    return container;       // Returns the <div> parent node
+    return container;
 }

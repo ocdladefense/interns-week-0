@@ -4,12 +4,14 @@ export class Location {
     name;
     lat;
     lng;
+    stateCode;
 
     // Full Constructor
-    constructor(name, lat, lng) {
+    constructor(name, lat, lng, stateCode) {
         this.name = name;
         this.lat = lat;
         this.lng = lng;
+        this.stateCode = stateCode;
     }
 
     setId(string){

@@ -104,40 +104,6 @@ export function useEffect(cb, deps) {
 
     effects[effectIndex] = effect;
     effectIndex++;
-
-
-    //     // Every effect should execute once after the first render.
-    //     if (renderCount == 1) {
-    //         effects.push(effect);
-
-    //         if (Array.isArray(deps)) {
-    //             oldDeps[effectIndex] = deps.slice();
-    //         }
-    //         else {
-    //             oldDeps[effectIndex] = null;
-    //         }
-
-    //         effectIndex++;
-    //         return;
-    //     }
-
-    //     // If deps doesn't exist, run effect every time.
-    //     if (deps == null) {
-    //         effects.push(effect);
-
-    //         oldDeps[effectIndex] = null;
-
-    //         effectIndex++;
-    //         return;
-    //     }
-
-    //     // If the newly passed dependencies don't match the old ones, execute the effect.
-    //     else if (Array.isArray(deps)) {   // Removed '&& deps.length > 0'...
-
-    //         effectIndex++;
-
-    //         return;
-    //     }
 }
 
 
