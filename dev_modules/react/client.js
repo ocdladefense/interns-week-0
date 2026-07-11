@@ -13,6 +13,7 @@ let updateQueue = [];
 
 // --- Initialize the state[] and effects[] arrays and the stateIndex and effectIndex variables. ----
 let state = [];
+let stateHistory = [];
 let stateIndex = 0;
 
 
@@ -61,6 +62,7 @@ function processQueue() {
 
     console.log("Processing update queue:", updateQueue);
 
+    let previousState = JSON.stringify(state);
     let currentState = state;
 
 
@@ -75,13 +77,21 @@ function processQueue() {
 
 
     // Apply the final consolidated state and trigger side effects/renders
+    stateHistory.push(JSON.parse(previousState));
     state = currentState;
     isProcessing = false;
     fubar();
 }
 
+export function loadPreviousState() {
 
-
+    let prevState = stateHistory.at(-1);
+    console.log(stateHistory);
+    console.log(prevState);
+    for (let i = 0; i < prevState.length; i++) {
+        sendEvent({ type: "stateUpdate", index: i, value: prevState[i] });
+    }
+}
 
 // =========================================================================================
 // ========= THE TYRANNICAL EFFECT MACHINE =================================================

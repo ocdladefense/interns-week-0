@@ -1,5 +1,5 @@
 import { App } from './components/App.js';
-import { createRoot } from './utils/react/client.js';
+import { createRoot } from 'react';
 
 // --------------------------------------------------------------------------------------------------------------------
 // RENDERING THE PAGE

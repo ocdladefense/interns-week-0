@@ -3,10 +3,15 @@ import { LocationInformation } from './LocationInformation.js';
 import { NoLocationSelected } from './NoLocationSelected.js';
 import { MyError } from './MyError.js';
 import { getLocation, getLocations } from '../data.js';
-import { useState, useEffect } from '../utils/react/client.js';
 import { History } from '../models/History.js';
 import { StatePicker } from './StatePicker.js';
+import {
+  useState,
+  useEffect,
+  loadPreviousState
+} from 'react';
 
+window.fubar = loadPreviousState;
 // --------------------------------------------------------------------------------------------------------------------
 // TOP LEVEL RENDERING FUNCTION
 // --------------------------------------------------------------------------------------------------------------------

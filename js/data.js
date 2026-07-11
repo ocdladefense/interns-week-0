@@ -43,7 +43,7 @@ function getLocation(id) {
 }
 
 
-
+// Rewrite this as one line of code
 function getLocations(stateCode) {             // Updated for stateCode usability
     
     if (stateCode == null) {                   // If no stateCode was provided...
